@@ -12,6 +12,7 @@
 
 #include <lib/utils_def.h>
 
+#include <drivers/qti/chipinfo/chipinfo.h>
 #include <drivers/qti/icb/icbid.h>
 #include <drivers/qti/icb/icbuarb.h>
 
@@ -90,15 +91,37 @@ struct icb_route {
 	struct icb_pair		*hops;
 };
 
+struct icb_data_update {
+	uint32_t	*addr;
+	uint32_t	 val;
+};
+
+struct icb_variant_config {
+	enum chipinfo_family	 family;
+	bool			 match;
+	uint32_t	     version;
+	uint32_t		 num_entries;
+	struct icb_data_update	*data;
+	uint8_t			*reg_addr;
+	uint32_t		 reg_mask;
+	uint32_t		 reg_val;
+};
+
+struct icb_variant_list {
+	uint32_t			  num_configs;
+	struct icb_variant_config	**configs;
+};
+
 struct icb_info {
-	uint32_t		num_routes;
+	uint32_t		 num_routes;
 	struct icb_route	**routes;
-	uint32_t		num_masters;
+	uint32_t		 num_masters;
 	struct icb_master	**masters;
-	uint32_t		num_slaves;
+	uint32_t		 num_slaves;
 	struct icb_slave	**slaves;
-	uint32_t		num_hw_nodes;
+	uint32_t		 num_hw_nodes;
 	struct icb_hw_node	**hw_nodes;
+	struct icb_variant_list	*variants;
 };
 
 struct icb_client {

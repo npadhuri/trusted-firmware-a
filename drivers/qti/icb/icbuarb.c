@@ -66,6 +66,100 @@ static rpmh_client_handle rpmh_handle;
 static struct icb_hw_node *commit_queue;
 static spinlock_t icb_lock;
 
+/*
+ * Integer index handle for the client lookup table.
+ * Index 0 is reserved as the invalid/sentinel value.
+ */
+typedef uint32_t icb_client_idx;
+#define INVALID_CLIENT_IDX		0U
+
+/*
+ * Lookup table capacity: one extra slot so that index 0 can serve as the
+ * invalid sentinel without wasting a usable entry.
+ */
+#define ICB_CLIENT_LOOKUP_SIZE		(ICB_MAX_CLIENTS + 1U)
+
+struct icb_client_table {
+	struct icb_client	**client_lookup;
+	uint32_t		  lookup_size;
+	uint32_t		  num_entry;
+};
+
+static struct icb_client *icb_lookup_backing[ICB_CLIENT_LOOKUP_SIZE];
+static struct icb_client_table icb_client_tbl __unused = {
+	.client_lookup = icb_lookup_backing,
+	.lookup_size   = ICB_CLIENT_LOOKUP_SIZE,
+	.num_entry     = 1U,	/* Reserve index 0 as invalid */
+};
+
+/*
+ * Add a client pointer to the lookup table and return its integer index.
+ * Returns INVALID_CLIENT_IDX if the table is full.
+ *
+ * Fast path: append at the high-water mark (num_entry).
+ * Slow path: scan for a slot freed by a previous remove_client_from_lookup().
+ */
+static icb_client_idx __unused add_client_handle_to_lookup(struct icb_client_table *table,
+							   struct icb_client *client)
+{
+	uint32_t i;
+
+	if (table->num_entry < table->lookup_size) {
+		table->client_lookup[table->num_entry] = client;
+		return table->num_entry++;
+	}
+
+	for (i = 1U; i < table->lookup_size; i++) {
+		if (table->client_lookup[i] == NULL) {
+			table->client_lookup[i] = client;
+			return i;
+		}
+	}
+
+	return INVALID_CLIENT_IDX;
+}
+
+/*
+ * Look up a client pointer by its integer index.
+ * Returns NULL for an invalid or freed index.
+ */
+static __unused struct icb_client *get_client_from_lookup(struct icb_client_table *table,
+							  icb_client_idx client_idx)
+{
+	if (client_idx == INVALID_CLIENT_IDX ||
+	    client_idx >= table->lookup_size ||
+	    table->client_lookup[client_idx] == NULL)
+		return NULL;
+
+	return table->client_lookup[client_idx];
+}
+
+/*
+ * Free a slot in the lookup table by zeroing its entry.
+ * Returns false if the index is out of range.
+ */
+static bool __unused remove_client_from_lookup(struct icb_client_table *table,
+					       icb_client_idx client_idx)
+{
+	if (client_idx == INVALID_CLIENT_IDX ||
+	    client_idx >= table->lookup_size)
+		return false;
+
+	table->client_lookup[client_idx] = NULL;
+	return true;
+}
+
+/*
+ * Reset the lookup table to its initial empty state.
+ */
+static void __unused cleanup_client_lookup(struct icb_client_table *table)
+{
+	memset(table->client_lookup, 0,
+	       table->lookup_size * sizeof(struct icb_client *));
+	table->num_entry = 1U;	/* Re-reserve index 0 as invalid */
+}
+
+
 static bool add_hw_node_request(struct icb_hw_request_list *req_list,
 				struct icb_bw_req *req,
 				uint32_t width,
