@@ -10,10 +10,10 @@ $(eval $(call add_define,QTI_ICB_ENABLED))
 
 ICB_BASE	:=	drivers/qti/icb
 
-PLAT_INCLUDES	+=	-I$(ICB_BASE)/common
+PLAT_INCLUDES	+=	-I$(ICB_BASE)
 
-BL31_SOURCES	+=	$(ICB_BASE)/common/noc_error.c
-BL31_SOURCES    +=      $(ICB_BASE)/common/icbuarb.c
+BL31_SOURCES	+=	$(ICB_BASE)/noc_error.c
+BL31_SOURCES    +=      $(ICB_BASE)/icbuarb.c
 
 #
 # Platform back-end. Each chipset directory under drivers/qti/icb/<CHIPSET>/
@@ -35,7 +35,8 @@ PLAT_INCLUDES	+=	-I$(ICB_BASE)/$(CHIPSET)
 BL31_SOURCES	+=	$(ICB_BASE)/$(CHIPSET)/noc_error_data.c		\
 			$(ICB_BASE)/$(CHIPSET)/noc_error_oem_data.c	\
 			$(ICB_BASE)/$(CHIPSET)/noc_error_target.c       \
-                        $(ICB_BASE)/$(CHIPSET)/icbuarb_target.c
+                        $(ICB_BASE)/$(CHIPSET)/icbuarb_target.c         \
+			$(ICB_BASE)/$(CHIPSET)/u_data.c
 else
 BL31_SOURCES	+=	$(ICB_BASE)/common/noc_error_target_stub.c
 endif
