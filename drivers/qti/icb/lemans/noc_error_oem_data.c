@@ -6,10 +6,12 @@
  * Provides nocerr_config_info_oem, consumed by drivers/qti/icb/common/noc_error.c.
  */
 
+#include <drivers/qti/chipinfo/chipinfo.h>
+
 #include "noc_error.h"
 
 /* Lemans OEM NOC configuration data - 11 NOC instances                      */
-static struct nocerr_info_oem nocerr_cfgdata_oem[] = {
+static struct nocerr_info_type_oem nocerr_cfgdata_oem[] = {
 	/* [0] AGGRE1_NOC */
 	{
 		.name        = "AGGRE1_NOC",
@@ -293,14 +295,14 @@ static uint32_t clock_reg_vals[] = {
 /* Global OEM configuration info exported to the common driver               */
 struct nocerr_config_info_oem nocerr_config_info_oem = {
 	.num_configs = 1U,
-	.configs = (struct nocerr_propdata_oem []){
+	.configs = (struct nocerr_propdata_type_oem []){
 		{
-			.family         = 115U, /* CHIPINFO_FAMILY_LEMANSAU */
+			.family         = (uint32_t)CHIPINFO_FAMILY_LEMANSAU,
 			.match          = false,
 			.version        = CHIPINFO_VERSION(1, 0),
 			.len            = sizeof(nocerr_cfgdata_oem) /
 					  sizeof(nocerr_cfgdata_oem[0]),
-			.noc_info_oem_list = nocerr_cfgdata_oem,
+			.noc_info_oem = nocerr_cfgdata_oem,
 			.clock_reg_vals = clock_reg_vals,
 			.filters        = NULL,
 			.reg_addr       = NULL,

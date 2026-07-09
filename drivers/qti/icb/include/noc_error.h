@@ -10,7 +10,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define CHIPINFO_VERSION(major, minor)  (((major) << 16) | (minor))
+#include <drivers/qti/chipinfo/chipinfo.h>
+
 #define BIT_FLAG(x) ((uint32_t)(1 << x))
 #define REGISTER_NOT_APPLICABLE 0xFFFF
 #define NO_INTERRUPT UINTPTR_MAX
@@ -243,11 +244,11 @@ struct noc_sfty_agg {
 };
 
 struct noc_qtv {
-	uint32_t qultivate_part_type;
-	uint32_t idx;
+	enum chipinfo_part	qultivate_part_type;
+	uint32_t		idx;
 };
 
-struct nocerr_info {
+struct nocerr_info_type {
 	char                    *name;
 	struct noc_hw           *hw;
 	void                    *base_addr;
@@ -295,7 +296,7 @@ struct nocerr_sfty_ctl_info_oem {
 	uint32_t outen_low;
 };
 
-struct nocerr_info_oem {
+struct nocerr_info_type_oem {
 	char                            *name;
 	bool                             intr_enable;
 	bool                             error_fatal;
@@ -323,12 +324,12 @@ struct nocerr_filter_oem {
 	bool delay_fatal;
 };
 
-struct nocerr_propdata {
+struct nocerr_propdata_type {
 	uint32_t             family;
 	bool                 match;
 	uint32_t             version;
 	uint32_t             len;
-	struct nocerr_info  *noc_info_list;
+	struct nocerr_info_type  *noc_info;
 	uint32_t             num_clock_regs;
 	void               **clock_reg_addrs;
 	uint32_t             num_filters;
@@ -340,15 +341,15 @@ struct nocerr_propdata {
 
 struct nocerr_config_info {
 	uint32_t                num_configs;
-	struct nocerr_propdata *configs;
+	struct nocerr_propdata_type *configs;
 };
 
-struct nocerr_propdata_oem {
+struct nocerr_propdata_type_oem {
 	uint32_t                  family;
 	bool                      match;
 	uint32_t                  version;
 	uint32_t                  len;
-	struct nocerr_info_oem   *noc_info_oem_list;
+	struct nocerr_info_type_oem   *noc_info_oem;
 	uint32_t                 *clock_reg_vals;
 	struct nocerr_filter_oem *filters;
 	uint8_t  *reg_addr;
@@ -358,7 +359,7 @@ struct nocerr_propdata_oem {
 
 struct nocerr_config_info_oem {
 	uint32_t                    num_configs;
-	struct nocerr_propdata_oem *configs;
+	struct nocerr_propdata_type_oem *configs;
 };
 
 #endif /* QTI_NOC_ERROR_H */

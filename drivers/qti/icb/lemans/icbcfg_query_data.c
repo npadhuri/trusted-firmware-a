@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <drivers/qti/chipinfo/chipinfo.h>
 #include <lib/utils_def.h>
 
 #include "icbcfg_hwio.h"
@@ -184,7 +185,7 @@ static struct icbcfg_prop icbcfg_prop_lemans_v1 = {
 
 /* 6-channel variant (default, no fuse check) */
 static struct icbcfg_device_config lemans_v1 = {
-	.family               = 115U, /* CHIPINFO_FAMILY_LEMANSAU */
+	.family               = (uint32_t)CHIPINFO_FAMILY_LEMANSAU,
 	.match                = false,
 	.version              = CHIPINFO_VERSION(1, 0),
 	.map_ddr_region_count = ARRAY_SIZE(map_ddr_regions_lemans_v1),
@@ -201,7 +202,7 @@ static struct icbcfg_device_config lemans_v1 = {
 
 /* 4-channel variant: DDR_CH_SEL_MODE == 1 */
 static struct icbcfg_device_config lemans_v1_4ch = {
-	.family               = 115U, /* CHIPINFO_FAMILY_LEMANSAU */
+	.family               = (uint32_t)CHIPINFO_FAMILY_LEMANSAU,
 	.match                = false,
 	.version              = CHIPINFO_VERSION(1, 0),
 	.reg_addr             = (uint8_t *)TCSR_TIMEOUT_INTR_CH2_CH4_OR_CH6_STATUS,
@@ -221,7 +222,7 @@ static struct icbcfg_device_config lemans_v1_4ch = {
 
 /* 2-channel variant: DDR_CH_SEL_MODE == 3 */
 static struct icbcfg_device_config lemans_v1_2ch = {
-	.family               = 115U, /* CHIPINFO_FAMILY_LEMANSAU */
+	.family               = (uint32_t)CHIPINFO_FAMILY_LEMANSAU,
 	.match                = false,
 	.version              = CHIPINFO_VERSION(1, 0),
 	.reg_addr             = (uint8_t *)TCSR_TIMEOUT_INTR_CH2_CH4_OR_CH6_STATUS,

@@ -6,7 +6,7 @@
 #ifndef QTI_NOC_HW_TYPE_H
 #define QTI_NOC_HW_TYPE_H
 
-#include <cdefs.h>
+#include <lib/utils_def.h>
 
 #include "noc_error.h"
 
@@ -34,7 +34,7 @@ static struct noc_hw QNOC_4_0 = {
 };
 
 /* NOC HW Register Offsets Gladiator Version (use ERRORVLD_LOW as base) */
-static struct noc_hw GLADIATOR_0_0 __maybe_unused = {
+static struct noc_hw GLADIATOR_0_0 __attribute__((unused)) = {
 	.swid_low       = REGISTER_NOT_APPLICABLE,
 	.swid_high      = REGISTER_NOT_APPLICABLE,
 	.main_ctl_low   = 0x0,  /* gladiator errvld_low */
@@ -75,7 +75,7 @@ static struct noc_sideband_hw QNOC_SB_4_0_L = {
 	.faultin_status2_high = REGISTER_NOT_APPLICABLE,
 };
 
-static struct noc_sideband_hw QNOC_SB_4_0 __maybe_unused = {
+static struct noc_sideband_hw QNOC_SB_4_0 __attribute__((unused)) = {
 	.swid_low             = 0x0,
 	.swid_high            = 0x4,
 	.faultin_en0_low      = 0x40,
@@ -109,7 +109,7 @@ static struct noc_sideband_hw QNOC_SB_4_0_2L = {
 	.faultin_status2_high = REGISTER_NOT_APPLICABLE,
 };
 
-static struct noc_sideband_hw QNOC_SB_4_0_2 __maybe_unused = {
+static struct noc_sideband_hw QNOC_SB_4_0_2 __attribute__((unused)) = {
 	.swid_low             = 0x0,
 	.swid_high            = 0x4,
 	.faultin_en0_low      = 0x40,
@@ -127,7 +127,7 @@ static struct noc_sideband_hw QNOC_SB_4_0_2 __maybe_unused = {
 };
 
 /* FAULTIN2 Sideband Manager - Low only */
-static struct noc_sideband_hw QNOC_SB_4_0_3L __maybe_unused = {
+static struct noc_sideband_hw QNOC_SB_4_0_3L __attribute__((unused)) = {
 	.swid_low             = 0x0,
 	.swid_high            = 0x4,
 	.faultin_en0_low      = 0x40,
@@ -145,7 +145,7 @@ static struct noc_sideband_hw QNOC_SB_4_0_3L __maybe_unused = {
 };
 
 /* FAULTIN2 Sideband Manager - Full */
-static struct noc_sideband_hw QNOC_SB_4_0_3 __maybe_unused = {
+static struct noc_sideband_hw QNOC_SB_4_0_3 __attribute__((unused)) = {
 	.swid_low             = 0x0,
 	.swid_high            = 0x4,
 	.faultin_en0_low      = 0x40,
@@ -163,7 +163,7 @@ static struct noc_sideband_hw QNOC_SB_4_0_3 __maybe_unused = {
 };
 
 /* NOC MSI Encoder HW Register Offsets */
-static struct noc_msi_hw QNOC_MSI_1_0 __maybe_unused = {
+static struct noc_msi_hw QNOC_MSI_1_0 __attribute__((unused)) = {
 	.msienc_swid_low     = 0x0,
 	.msienc_swid_high    = 0x4,
 	.msienc_errorset_low = 0x8,
@@ -178,7 +178,7 @@ static struct noc_msi_hw QNOC_MSI_1_0 __maybe_unused = {
 };
 
 /* NOC Point-Of-Serialization HW Register Offsets */
-static struct noc_pos_hw QNOC_POS_4_0 __maybe_unused = {
+static struct noc_pos_hw QNOC_POS_4_0 __attribute__((unused)) = {
 	.swid_low      = 0x0,
 	.swid_high     = 0x4,
 	.errlog_low    = 0x8,
@@ -187,7 +187,7 @@ static struct noc_pos_hw QNOC_POS_4_0 __maybe_unused = {
 };
 
 /* NOC Point-Of-Coherency HW Register Offsets - no errloguser */
-static struct noc_poc_hw QNOC_POC_1_0_L __maybe_unused = {
+static struct noc_poc_hw QNOC_POC_1_0_L __attribute__((unused)) = {
 	.swid_low        = 0x00,
 	.swid_high       = 0x04,
 	.errset_low      = 0x08,
@@ -204,7 +204,7 @@ static struct noc_poc_hw QNOC_POC_1_0_L __maybe_unused = {
 };
 
 /* NOC Point-Of-Coherency HW Register Offsets - with errloguser */
-static struct noc_poc_hw QNOC_POC_1_0 __maybe_unused = {
+static struct noc_poc_hw QNOC_POC_1_0 __attribute__((unused)) = {
 	.swid_low        = 0x00,
 	.swid_high       = 0x04,
 	.errset_low      = 0x08,
@@ -221,7 +221,7 @@ static struct noc_poc_hw QNOC_POC_1_0 __maybe_unused = {
 };
 
 /* NOC Point-Of-Coherency HW Register Offsets - HSCNOC V2 (errlogmisc, no errloguser) */
-static struct noc_poc_hw QNOC_POC_1_0_HSCNOC_V2 __maybe_unused = {
+static struct noc_poc_hw QNOC_POC_1_0_HSCNOC_V2 __attribute__((unused)) = {
 	.swid_low        = 0x00,
 	.swid_high       = 0x04,
 	.errset_low      = 0x08,
@@ -238,7 +238,7 @@ static struct noc_poc_hw QNOC_POC_1_0_HSCNOC_V2 __maybe_unused = {
 };
 
 /* NOC Safety Manager HW Register Offsets */
-static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0 __maybe_unused = {
+static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0 __attribute__((unused)) = {
 	.swid_low    = 0x00,
 	.swid_high   = 0x04,
 	.bistctl_low = 0x08,
@@ -258,7 +258,7 @@ static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0 __maybe_unused = {
 	.ufltc_high  = REGISTER_NOT_APPLICABLE,
 };
 
-static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0_L __maybe_unused = {
+static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0_L __attribute__((unused)) = {
 	.swid_low    = 0x00,
 	.swid_high   = 0x04,
 	.bistctl_low = 0x08,
@@ -278,7 +278,7 @@ static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0_L __maybe_unused = {
 	.ufltc_high  = REGISTER_NOT_APPLICABLE,
 };
 
-static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0_B __maybe_unused = {
+static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0_B __attribute__((unused)) = {
 	.swid_low    = 0x00,
 	.swid_high   = 0x04,
 	.bistctl_low = 0x08,
@@ -298,7 +298,7 @@ static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0_B __maybe_unused = {
 	.ufltc_high  = REGISTER_NOT_APPLICABLE,
 };
 
-static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0_BH __maybe_unused = {
+static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0_BH __attribute__((unused)) = {
 	.swid_low    = 0x00,
 	.swid_high   = 0x04,
 	.bistctl_low = 0x08,
@@ -318,7 +318,7 @@ static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0_BH __maybe_unused = {
 	.ufltc_high  = REGISTER_NOT_APPLICABLE,
 };
 
-static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0_2B __maybe_unused = {
+static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0_2B __attribute__((unused)) = {
 	.swid_low    = 0x00,
 	.swid_high   = 0x04,
 	.bistctl_low = 0x08,
@@ -339,7 +339,7 @@ static struct noc_sfty_ctl_hw QNOC_SFTY_CTL_1_0_2B __maybe_unused = {
 };
 
 /* NOC Safety Aggregator HW Register Offsets */
-static struct noc_sfty_agg_hw QNOC_SFTY_AGG_1_0 __maybe_unused = {
+static struct noc_sfty_agg_hw QNOC_SFTY_AGG_1_0 __attribute__((unused)) = {
 	.swid_low    = 0x00,
 	.swid_high   = 0x04,
 	.mainctl_low = 0x08,
@@ -350,7 +350,7 @@ static struct noc_sfty_agg_hw QNOC_SFTY_AGG_1_0 __maybe_unused = {
 	.max_version = CHIPINFO_VERSION(0, 0),
 };
 
-static struct noc_sfty_agg_hw QNOC_SFTY_AGG_V1_1_0 __maybe_unused = {
+static struct noc_sfty_agg_hw QNOC_SFTY_AGG_V1_1_0 __attribute__((unused)) = {
 	.swid_low    = 0x00,
 	.swid_high   = 0x04,
 	.mainctl_low = 0x08,
@@ -361,7 +361,7 @@ static struct noc_sfty_agg_hw QNOC_SFTY_AGG_V1_1_0 __maybe_unused = {
 	.max_version = CHIPINFO_VERSION(2, 0),
 };
 
-static struct noc_sfty_agg_hw QNOC_SFTY_AGG_V2_1_0 __maybe_unused = {
+static struct noc_sfty_agg_hw QNOC_SFTY_AGG_V2_1_0 __attribute__((unused)) = {
 	.swid_low    = 0x00,
 	.swid_high   = 0x04,
 	.mainctl_low = 0x08,
@@ -373,7 +373,7 @@ static struct noc_sfty_agg_hw QNOC_SFTY_AGG_V2_1_0 __maybe_unused = {
 };
 
 /* Safety Aggregators with no correctable counter (XC variants) */
-static struct noc_sfty_agg_hw QNOC_SFTY_AGG_1_0_XC __maybe_unused = {
+static struct noc_sfty_agg_hw QNOC_SFTY_AGG_1_0_XC __attribute__((unused)) = {
 	.swid_low    = 0x00,
 	.swid_high   = 0x04,
 	.mainctl_low = 0x08,
@@ -384,7 +384,7 @@ static struct noc_sfty_agg_hw QNOC_SFTY_AGG_1_0_XC __maybe_unused = {
 	.max_version = CHIPINFO_VERSION(0, 0),
 };
 
-static struct noc_sfty_agg_hw QNOC_SFTY_AGG_V1_1_0_XC __maybe_unused = {
+static struct noc_sfty_agg_hw QNOC_SFTY_AGG_V1_1_0_XC __attribute__((unused)) = {
 	.swid_low    = 0x00,
 	.swid_high   = 0x04,
 	.mainctl_low = 0x08,
@@ -395,7 +395,7 @@ static struct noc_sfty_agg_hw QNOC_SFTY_AGG_V1_1_0_XC __maybe_unused = {
 	.max_version = CHIPINFO_VERSION(2, 0),
 };
 
-static struct noc_sfty_agg_hw QNOC_SFTY_AGG_V2_1_0_XC __maybe_unused = {
+static struct noc_sfty_agg_hw QNOC_SFTY_AGG_V2_1_0_XC __attribute__((unused)) = {
 	.swid_low    = 0x00,
 	.swid_high   = 0x04,
 	.mainctl_low = 0x08,

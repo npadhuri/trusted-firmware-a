@@ -13,7 +13,9 @@ ICB_BASE	:=	drivers/qti/icb
 PLAT_INCLUDES	+=	-I$(ICB_BASE)
 PLAT_INCLUDES   +=      -I$(ICB_BASE)/include
 
-BL31_SOURCES	+=	$(ICB_BASE)/noc_error.c
+BL31_SOURCES	+=	$(ICB_BASE)/noc_error.c		\
+			$(ICB_BASE)/cmsr_error.c	\
+			$(ICB_BASE)/ddrss_error.c
 BL31_SOURCES    +=      $(ICB_BASE)/icbuarb.c
 
 #
@@ -35,11 +37,13 @@ ifneq ($(CHIPSET),)
 PLAT_INCLUDES	+=	-I$(ICB_BASE)/$(CHIPSET)
 BL31_SOURCES	+=	$(ICB_BASE)/$(CHIPSET)/noc_error_data.c		\
 			$(ICB_BASE)/$(CHIPSET)/noc_error_oem_data.c	\
-			$(ICB_BASE)/$(CHIPSET)/noc_error_target.c       \
-            $(ICB_BASE)/$(CHIPSET)/icbuarb_target.c         \
-			$(ICB_BASE)/$(CHIPSET)/u_data.c
+			$(ICB_BASE)/$(CHIPSET)/noc_error_target.c	\
+			$(ICB_BASE)/$(CHIPSET)/icbuarb_target.c		\
+			$(ICB_BASE)/$(CHIPSET)/u_data.c			\
+			$(ICB_BASE)/$(CHIPSET)/cmsr_error_data.c	\
+			$(ICB_BASE)/$(CHIPSET)/ddrss_error_data.c
 else
-BL31_SOURCES	+=	$(ICB_BASE)/common/noc_error_target_stub.c
+BL31_SOURCES	+=	$(ICB_BASE)/noc_error_target_stub.c
 endif
 
 #

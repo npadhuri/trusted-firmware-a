@@ -14,6 +14,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <drivers/qti/chipinfo/chipinfo.h>
 
 /* Chip version encoding: major.minor packed into a uint32_t */
 #ifndef CHIPINFO_VERSION
@@ -79,14 +80,35 @@ struct icbcfg_data {
 };
 
 /**
+ * struct icbcfg_qtv - a single Qultivate (per-instance SKU) part check.
+ *
+ * If all entries in a prop's qtv_parts[] array are disabled on this SKU,
+ * the entire register-write list is skipped.
+ *
+ * @part:     hardware part identifier (enum chipinfo_part)
+ * @part_idx: instance index passed to chipinfo_is_part_disabled():
+ *            0  => flat disabled-features table (all-or-nothing fuse)
+ *            >0 => per-instance Qultivate table entry
+ */
+struct icbcfg_qtv {
+	enum chipinfo_part part;
+	uint32_t           part_idx;
+};
+
+/**
  * struct icbcfg_prop - an ordered list of register writes to apply at
  *                      initialisation time.
- * @len:  number of entries in @data
- * @data: pointer to the array of register writes
+ * @len:           number of entries in @data
+ * @data:          pointer to the array of register writes
+ * @num_qtv_parts: number of entries in @qtv_parts (0 = no SKU check)
+ * @qtv_parts:     optional array of Qultivate part checks; when all
+ *                 listed parts are disabled the writes are skipped
  */
 struct icbcfg_prop {
 	uint32_t            len;
 	struct icbcfg_data *data;
+	uint32_t            num_qtv_parts;
+	struct icbcfg_qtv  *qtv_parts;
 };
 
 /**
@@ -157,7 +179,58 @@ struct icbcfg_info {
 	struct icbcfg_device_config **configs;
 };
 
+/**
+ * enum icbcfg_error_type - return codes for ICB query functions.
+ */
+enum icbcfg_error_type {
+	ICBCFG_SUCCESS               =  0,
+	ICBCFG_ERROR                 = -1,
+	ICBCFG_ERROR_INVALID_PARAM   = -2,
+	ICBCFG_ERROR_INIT_FAILURE    = -3,
+	ICBCFG_ERROR_INVALID_ADDRESS = -4,
+};
+
+/**
+ * struct icb_region - a single contiguous DDR region as seen by the system.
+ * @base_addr:   physical base address of the region
+ * @size:        size of the region in bytes
+ * @interleaved: true when more than one DDR channel is active
+ */
+struct icb_region {
+	uint64_t	base_addr;
+	uint64_t	size;
+	bool		interleaved;
+};
+
+/* Per-channel memory-map descriptor. */
+struct icb_channel {
+	struct icb_region	regions[10]; /* MAX_REGIONS */
+};
+
+/* Full system memory map returned by icb_get_memmap(). */
+struct icb_mem_map {
+	struct icb_channel	channels[8]; /* MAX_CHANNELS */
+};
+
 /* Declared in the platform icbcfg_query_data.c */
 extern struct icbcfg_info icbcfg_info;
+
+/* ---- Public API ---- */
+
+/* icbcfg.c */
+void icbcfg_init(void);
+void icbcfg_post_init(void);
+
+/* icbcfg_query.c */
+void update_addr_translation(void);
+
+enum icbcfg_error_type icb_get_memmap(struct icb_mem_map *info);
+enum icbcfg_error_type icb_get_allowed_mem_region(
+	struct icbcfg_mem_region *info);
+enum icbcfg_error_type icb_get_allowed_mem_region_ex(
+	struct icbcfg_mem_region **info, uint32_t *num_regions);
+enum icbcfg_error_type icb_get_mc_addr(uint64_t soc_addr, uint64_t *mc_addr);
+enum icbcfg_error_type icb_get_soc_addr(uint64_t mc_addr, uint64_t *soc_addr);
+enum icbcfg_error_type icb_get_num_ddr_channels(uint32_t *num_channels);
 
 #endif /* QTI_ICBCFG_QUERY_H */
