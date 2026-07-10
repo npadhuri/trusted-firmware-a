@@ -10,6 +10,72 @@
 #define QTI_ICBCFG_HWIO_H
 
 #include <stdint.h>
+#include <lib/mmio.h>
+
+/*
+ * TFA-compatible replacements for TZ HWIO macros used by icbcfg_query.c.
+ *
+ * HWIO_INXF(base, reg, field):
+ *   Read the named field from register <reg> at absolute address <base>.
+ *   <base> is the absolute address of the register (trans_bases[] already
+ *   points directly at the register, so the offset is 0).
+ *
+ * HWIO_INXI(base, reg, index):
+ *   Read indexed register <reg>[index] at absolute address <base>.
+ *   The stride between consecutive entries is reg##_STRIDE bytes.
+ */
+#define HWIO_INXF(base, reg, field) \
+	((mmio_read_32((uintptr_t)(base) + reg##_OFFSET) \
+	  & reg##_##field##_BMSK) >> reg##_##field##_SHFT)
+
+#define HWIO_INXI(base, reg, index) \
+	mmio_read_32((uintptr_t)(base) + reg##_OFFSET + \
+		     (uint32_t)(index) * reg##_STRIDE)
+
+/*
+ * LLCC BEAC address-translator register layout.
+ *
+ * trans_bases[0] is set to the absolute address of the
+ * LLCC_BEAC_ADDR_TRANSLATOR_CFG register for the selected LLCC slice
+ * (e.g. LLCC0_LLCC_BEAC_ADDR_TRANSLATOR_CFG).  All offsets below are
+ * relative to that same base.
+ *
+ * Register map (relative to LLCC_BEAC_ADDR_TRANSLATOR_CFG):
+ *   +0x0000  ADDR_TRANSLATOR_CFG   (ERROR field at bit 0)
+ *   +0x0010  ADDR_REGIONn_CFG0[n]  stride 0x20  (offset_lo[31:0])
+ *   +0x0014  ADDR_REGIONn_CFG1[n]  stride 0x20  (offset_hi[31:0])
+ *   +0x0018  ADDR_REGIONn_CFG2[n]  stride 0x20  (base_lo[31:0])
+ *   +0x001C  ADDR_REGIONn_CFG3[n]  stride 0x20  (base_hi[31:0])
+ */
+#define LLCC_BEAC_ADDR_TRANSLATOR_CFG_OFFSET	0x0000U
+#define LLCC_BEAC_ADDR_TRANSLATOR_CFG_ERROR_BMSK	0xFFFFFFFFU
+#define LLCC_BEAC_ADDR_TRANSLATOR_CFG_ERROR_SHFT	0U
+
+#define LLCC_BEAC_ADDR_REGIONn_CFG0_OFFSET	0x0010U
+#define LLCC_BEAC_ADDR_REGIONn_CFG0_STRIDE	0x0020U
+
+#define LLCC_BEAC_ADDR_REGIONn_CFG1_OFFSET	0x0014U
+#define LLCC_BEAC_ADDR_REGIONn_CFG1_STRIDE	0x0020U
+
+#define LLCC_BEAC_ADDR_REGIONn_CFG2_OFFSET	0x0018U
+#define LLCC_BEAC_ADDR_REGIONn_CFG2_STRIDE	0x0020U
+
+#define LLCC_BEAC_ADDR_REGIONn_CFG3_OFFSET	0x001CU
+#define LLCC_BEAC_ADDR_REGIONn_CFG3_STRIDE	0x0020U
+
+/* MA (multi-address) region variants — same layout, different base offset */
+#define LLCC_BEAC_MA_ADDR_REGIONn_CFG0_OFFSET	0x0110U
+#define LLCC_BEAC_MA_ADDR_REGIONn_CFG0_STRIDE	0x0020U
+
+#define LLCC_BEAC_MA_ADDR_REGIONn_CFG1_OFFSET	0x0114U
+#define LLCC_BEAC_MA_ADDR_REGIONn_CFG1_STRIDE	0x0020U
+
+#define LLCC_BEAC_MA_ADDR_REGIONn_CFG2_OFFSET	0x0118U
+#define LLCC_BEAC_MA_ADDR_REGIONn_CFG2_STRIDE	0x0020U
+
+#define LLCC_BEAC_MA_ADDR_REGIONn_CFG3_OFFSET	0x011CU
+#define LLCC_BEAC_MA_ADDR_REGIONn_CFG3_STRIDE	0x0020U
+
 
 /* Base addresses */
 #define DDR_SS_BASE			0x24000000U

@@ -215,7 +215,7 @@ static void *cmsr_error_handle_interrupt(uint32_t int_num, void *ctx)
 }
 
 /* Public init entry point */
-void qti_cmsr_error_init(void)
+static void cmsr_error_init(void)
 {
 	CMSRERR_propdata_t *propdata;
 	uint32_t i;
@@ -304,4 +304,9 @@ void cmsr_error_init_target(CMSRERR_info_t *info __unused)
 bool cmsr_error_target_fatal_filter(CMSRERR_info_t *info __unused)
 {
 	return true;
+}
+
+void qti_cmsr_error_init(void)
+{
+	cmsr_error_init();
 }

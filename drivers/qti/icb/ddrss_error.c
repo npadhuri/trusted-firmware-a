@@ -184,17 +184,29 @@ static bool ddrss_error_handle_llcc(void)
 			error_detected = true;
 
 			if (REGISTER_VALID(feac_hw->uimage_region_err_status1))
-				ext->uimage_region_err_status1 = IN_32(REG_ADDR(llcc->feac_base_addr, feac_hw->uimage_region_err_status1));
+				ext->uimage_region_err_status1 =
+					IN_32(REG_ADDR(llcc->feac_base_addr,
+						feac_hw->uimage_region_err_status1));
 			if (REGISTER_VALID(feac_hw->uimage_region_err_status2))
-				ext->uimage_region_err_status2 = IN_32(REG_ADDR(llcc->feac_base_addr, feac_hw->uimage_region_err_status2));
+				ext->uimage_region_err_status2 =
+					IN_32(REG_ADDR(llcc->feac_base_addr,
+						feac_hw->uimage_region_err_status2));
 			if (REGISTER_VALID(feac_hw->uimage_region_err_status3))
-				ext->uimage_region_err_status3 = IN_32(REG_ADDR(llcc->feac_base_addr, feac_hw->uimage_region_err_status3));
+				ext->uimage_region_err_status3 =
+					IN_32(REG_ADDR(llcc->feac_base_addr,
+						feac_hw->uimage_region_err_status3));
 			if (REGISTER_VALID(feac_hw->uimage_region_err_status4))
-				ext->uimage_region_err_status4 = IN_32(REG_ADDR(llcc->feac_base_addr, feac_hw->uimage_region_err_status4));
+				ext->uimage_region_err_status4 =
+					IN_32(REG_ADDR(llcc->feac_base_addr,
+						feac_hw->uimage_region_err_status4));
 			if (REGISTER_VALID(feac_hw->uimage_region_err_status5))
-				ext->uimage_region_err_status5 = IN_32(REG_ADDR(llcc->feac_base_addr, feac_hw->uimage_region_err_status5));
+				ext->uimage_region_err_status5 =
+					IN_32(REG_ADDR(llcc->feac_base_addr,
+						feac_hw->uimage_region_err_status5));
 			if (REGISTER_VALID(feac_hw->uimage_region_err_status6))
-				ext->uimage_region_err_status6 = IN_32(REG_ADDR(llcc->feac_base_addr, feac_hw->uimage_region_err_status6));
+				ext->uimage_region_err_status6 =
+					IN_32(REG_ADDR(llcc->feac_base_addr,
+						feac_hw->uimage_region_err_status6));
 
 			ERROR("(%x %s 0x%x 0x%x 0x%x 0x%x 0x%x 0x%x)\n",
 			      DDRSSERR_FEAC_UIMAGE_ERR_STATUS_REG, llcc->name,
@@ -353,8 +365,8 @@ static void *ddrss_error_handle_interrupt(uint32_t int_num, void *ctx)
 	return ctx;
 }
 
-/* Public init entry point */
-void qti_ddrss_error_init(void)
+/* DDRSS-specific init (called from qti_icb_error_init in noc_error.c) */
+static void ddrss_error_init(void)
 {
 	DDRSSERR_propdata_t     *propdata;
 	DDRSSERR_propdata_oem_t *propdata_oem;
@@ -425,4 +437,9 @@ void qti_ddrss_error_init(void)
 bool ddrss_error_target_fatal_filter(DDRSSERR_info_t *info __unused)
 {
 	return true;
+}
+
+void qti_ddrss_error_init(void)
+{
+	ddrss_error_init();
 }

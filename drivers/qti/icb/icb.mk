@@ -15,7 +15,9 @@ PLAT_INCLUDES   +=      -I$(ICB_BASE)/include
 
 BL31_SOURCES	+=	$(ICB_BASE)/noc_error.c		\
 			$(ICB_BASE)/cmsr_error.c	\
-			$(ICB_BASE)/ddrss_error.c
+			$(ICB_BASE)/ddrss_error.c	\
+			$(ICB_BASE)/icbcfg.c		\
+			$(ICB_BASE)/icbcfg_query.c
 BL31_SOURCES    +=      $(ICB_BASE)/icbuarb.c
 
 #
@@ -41,7 +43,8 @@ BL31_SOURCES	+=	$(ICB_BASE)/$(CHIPSET)/noc_error_data.c		\
 			$(ICB_BASE)/$(CHIPSET)/icbuarb_target.c		\
 			$(ICB_BASE)/$(CHIPSET)/u_data.c			\
 			$(ICB_BASE)/$(CHIPSET)/cmsr_error_data.c	\
-			$(ICB_BASE)/$(CHIPSET)/ddrss_error_data.c
+			$(ICB_BASE)/$(CHIPSET)/ddrss_error_data.c	\
+			$(ICB_BASE)/$(CHIPSET)/icbcfg_query_data.c
 else
 BL31_SOURCES	+=	$(ICB_BASE)/noc_error_target_stub.c
 endif
