@@ -21,14 +21,7 @@
 #define CHIPINFO_VERSION(major, minor)	(((major) << 16) | (minor))
 #endif
 
-/**
- * ICBCFG_HWIO_DW() - initialise a struct icbcfg_data entry.
- * @reg:   physical address of the register (uintptr_t-compatible expression)
- * @value: 32-bit value to write
- *
- * Expands to a brace-enclosed struct icbcfg_data initialiser suitable
- * for use inside an array initialiser.
- */
+/* Initialise a struct icbcfg_data entry: { .addr = reg, .val = value } */
 #define ICBCFG_HWIO_DW(reg, value) \
 	{ .addr = (uintptr_t)(reg), .val = (uint32_t)(value) }
 
@@ -43,8 +36,10 @@
  */
 enum icbcfg_addr_trans_type {
 	ICBCFG_ADDR_TRANS_NONE		= 0,
-	ICBCFG_ADDR_TRANS_LLCC,
-	ICBCFG_ADDR_TRANS_LLCC_6CH,
+	ICBCFG_ADDR_TRANS_NOC,		/* MemNOC address translator */
+	ICBCFG_ADDR_TRANS_LLCC,		/* LLCC BEAC address translator */
+	ICBCFG_ADDR_TRANS_MC,		/* MC ISU address translator */
+	ICBCFG_ADDR_TRANS_LLCC_6CH,	/* 6-channel LLCC BEAC */
 	ICBCFG_ADDR_TRANS_COUNT,
 };
 
@@ -79,31 +74,19 @@ struct icbcfg_data {
 	uint32_t  val;
 };
 
-/**
- * struct icbcfg_qtv - a single Qultivate (per-instance SKU) part check.
- *
- * If all entries in a prop's qtv_parts[] array are disabled on this SKU,
- * the entire register-write list is skipped.
- *
- * @part:     hardware part identifier (enum chipinfo_part)
- * @part_idx: instance index passed to chipinfo_is_part_disabled():
- *            0  => flat disabled-features table (all-or-nothing fuse)
- *            >0 => per-instance Qultivate table entry
- */
+/* Ordered list of icbcfg_prop segments (mirrors TZ icbcfg_prop_list_type). */
+struct icbcfg_prop_list {
+	const struct icbcfg_prop	**segs;
+	uint32_t			  len;
+};
+
+/* Qultivate (per-instance SKU) part check. */
 struct icbcfg_qtv {
 	enum chipinfo_part part;
 	uint32_t           part_idx;
 };
 
-/**
- * struct icbcfg_prop - an ordered list of register writes to apply at
- *                      initialisation time.
- * @len:           number of entries in @data
- * @data:          pointer to the array of register writes
- * @num_qtv_parts: number of entries in @qtv_parts (0 = no SKU check)
- * @qtv_parts:     optional array of Qultivate part checks; when all
- *                 listed parts are disabled the writes are skipped
- */
+/* Register write list with optional Qultivate SKU check. */
 struct icbcfg_prop {
 	uint32_t            len;
 	struct icbcfg_data *data;
@@ -111,35 +94,7 @@ struct icbcfg_prop {
 	struct icbcfg_qtv  *qtv_parts;
 };
 
-/**
- * struct icbcfg_device_config - per-variant (SKU) device configuration.
- *
- * Chip identification:
- * @family:  chip family identifier (CHIPINFO_FAMILY_*)
- * @match:   true  => exact version match required
- *           false => match any version >= @version
- * @version: minimum (or exact) chip version, encoded with CHIPINFO_VERSION()
- *
- * Optional SKU fuse/register discriminator (all three must be set together):
- * @reg_addr: physical address of the fuse/status register, or NULL
- * @reg_mask: bitmask to apply before comparing
- * @reg_val:  expected value after masking
- *
- * DDR topology:
- * @map_ddr_region_count: number of entries in @map_ddr_regions
- * @map_ddr_regions:      array of mappable DDR regions
- * @num_segments:         number of address-translation segments
- * @num_channels:         number of active DDR channels
- * @addr_width:           physical address width in bits
- * @trans_type:           address-translator hardware variant
- * @trans_bases:          array of @num_channels translation-block base
- *                        addresses (one per LLCC channel)
- * @seg_offsets:          array of @num_segments segment register offsets
- *
- * Register configuration:
- * @prop_data:       one-time init register writes (applied at boot)
- * @post_prop_data:  post-init register writes, or NULL if unused
- */
+/* Per-variant (SKU) device configuration. */
 struct icbcfg_device_config {
 	/* Chip identification */
 	uint32_t  family;
@@ -159,21 +114,17 @@ struct icbcfg_device_config {
 	uint32_t                    addr_width;
 	enum icbcfg_addr_trans_type trans_type;
 	uint8_t                   **trans_bases;
+	uint8_t                   **addl_trans_bases;	/* bases for segments >= ADDL_REGION_START */
 	struct icbcfg_seg_offsets  *seg_offsets;
 
 	/* Register configuration */
-	struct icbcfg_prop *prop_data;
-	struct icbcfg_prop *post_prop_data;
+	struct icbcfg_prop		*prop_data;
+	struct icbcfg_prop_list		*prop_data_list;
+	struct icbcfg_prop		*post_prop_data;
+	struct icbcfg_prop_list		*post_prop_data_list;
 };
 
-/**
- * struct icbcfg_info - top-level descriptor exported by each platform's
- *                      icbcfg_query_data.c.
- * @num_configs: number of entries in @configs
- * @configs:     array of pointers to per-variant configurations, ordered
- *               from most-constrained (fuse-matched) to least-constrained
- *               (fallback)
- */
+/* Top-level descriptor exported by each platform's icbcfg_query_data.c. */
 struct icbcfg_info {
 	uint32_t                      num_configs;
 	struct icbcfg_device_config **configs;
@@ -190,12 +141,6 @@ enum icbcfg_error_type {
 	ICBCFG_ERROR_INVALID_ADDRESS = -4,
 };
 
-/**
- * struct icb_region - a single contiguous DDR region as seen by the system.
- * @base_addr:   physical base address of the region
- * @size:        size of the region in bytes
- * @interleaved: true when more than one DDR channel is active
- */
 struct icb_region {
 	uint64_t	base_addr;
 	uint64_t	size;

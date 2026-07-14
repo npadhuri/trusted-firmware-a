@@ -52,6 +52,22 @@ static void icb_configure_settings(const struct icbcfg_prop *prop)
 	}
 }
 
+/* Apply an ordered list of icbcfg_prop segments. */
+static void icb_configure_settings_list(
+	const struct icbcfg_prop_list *prop_list)
+{
+	uint32_t i;
+
+	if (prop_list == NULL || prop_list->segs == NULL)
+		return;
+
+	for (i = 0U; i < prop_list->len; i++) {
+		if (prop_list->segs[i] == NULL)
+			continue;
+		icb_configure_settings(prop_list->segs[i]);
+	}
+}
+
 static bool get_device_configuration(struct icbcfg_device_config **dev_config)
 {
 	if (!dev_config_valid) {
@@ -98,7 +114,11 @@ static void icb_config_init(void)
 	if (!get_device_configuration(&dev_config))
 		return;
 
-	icb_configure_settings(dev_config->prop_data);
+	/* prop_data and prop_data_list are mutually exclusive. */
+	if (dev_config->prop_data != NULL)
+		icb_configure_settings(dev_config->prop_data);
+	else
+		icb_configure_settings_list(dev_config->prop_data_list);
 }
 
 static void icb_config_post_init(void)
@@ -108,7 +128,11 @@ static void icb_config_post_init(void)
 	if (!get_device_configuration(&dev_config))
 		return;
 
-	icb_configure_settings(dev_config->post_prop_data);
+	/* post_prop_data and post_prop_data_list are mutually exclusive. */
+	if (dev_config->post_prop_data != NULL)
+		icb_configure_settings(dev_config->post_prop_data);
+	else
+		icb_configure_settings_list(dev_config->post_prop_data_list);
 }
 
 void icbcfg_init(void)

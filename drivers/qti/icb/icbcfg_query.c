@@ -42,15 +42,47 @@ static void get_addr_translation(struct icbcfg_device_config *dev_config)
 	memset(addr_trans_segs, 0, sizeof(addr_trans_segs));
 
 	switch (dev_config->trans_type) {
-	case ICBCFG_ADDR_TRANS_LLCC:
+	case ICBCFG_ADDR_TRANS_NOC:
 		error = HWIO_INXF(dev_config->trans_bases[0],
-				  LLCC_BEAC_ADDR_TRANSLATOR_CFG, ERROR);
-		for (i = 0U;
-		     i < dev_config->num_segments && i < ADDL_REGION_START;
-		     i++) {
+				  MEMNOC_ADDR_TRANSLATOR_CFG, ERROR);
+		for (i = 0U; i < dev_config->num_segments; i++) {
 			if (i == 0U) {
 				addr_trans_segs[0].base = 0ULL;
 			} else {
+				addr_trans_segs[i].base =
+					((uint64_t)HWIO_INXI(
+						dev_config->trans_bases[0],
+						MEMNOC_ADDR_TRANSLATOR_BASEn_LOW,
+						i)) |
+					(((uint64_t)HWIO_INXI(
+						dev_config->trans_bases[0],
+						MEMNOC_ADDR_TRANSLATOR_BASEn_HIGH,
+						i)) << 32);
+			}
+			addr_trans_segs[i].offset =
+				((uint64_t)HWIO_INXI(
+					dev_config->trans_bases[0],
+					MEMNOC_ADDR_TRANSLATOR_OFFSETn_LOW,
+					i)) |
+				(((uint64_t)HWIO_INXI(
+					dev_config->trans_bases[0],
+					MEMNOC_ADDR_TRANSLATOR_OFFSETn_HIGH,
+					i)) << 32);
+			addr_trans_segs[i].error = (error & (1U << i)) != 0U;
+			addr_trans_segs[i].offset =
+				(addr_trans_segs[i].offset ^ sign_bit) -
+				sign_bit;
+		}
+		break;
+
+	case ICBCFG_ADDR_TRANS_LLCC:
+		/* Segments 0..(ADDL_REGION_START-1): trans_bases[]; 6+: addl_trans_bases[] */
+		error = HWIO_INXF(dev_config->trans_bases[0],
+				  LLCC_BEAC_ADDR_TRANSLATOR_CFG, ERROR);
+		for (i = 0U; i < dev_config->num_segments; i++) {
+			if (i == 0U) {
+				addr_trans_segs[0].base = 0ULL;
+			} else if (i < ADDL_REGION_START) {
 				addr_trans_segs[i].base =
 					((uint64_t)HWIO_INXI(
 						dev_config->trans_bases[0],
@@ -60,14 +92,82 @@ static void get_addr_translation(struct icbcfg_device_config *dev_config)
 						dev_config->trans_bases[0],
 						LLCC_BEAC_ADDR_REGIONn_CFG3,
 						i)) << 32);
+			} else if (dev_config->addl_trans_bases != NULL) {
+				addr_trans_segs[i].base =
+					((uint64_t)HWIO_INXI(
+						dev_config->addl_trans_bases[0],
+						LLCC_BEAC_ADDR_ADDL_REGIONn_CFG2,
+						i)) |
+					(((uint64_t)HWIO_INXI(
+						dev_config->addl_trans_bases[0],
+						LLCC_BEAC_ADDR_ADDL_REGIONn_CFG3,
+						i)) << 32);
 			}
+
+			if (i < ADDL_REGION_START) {
+				addr_trans_segs[i].offset =
+					((uint64_t)HWIO_INXI(
+						dev_config->trans_bases[0],
+						LLCC_BEAC_ADDR_REGIONn_CFG0,
+						i)) |
+					(((uint64_t)HWIO_INXI(
+						dev_config->trans_bases[0],
+						LLCC_BEAC_ADDR_REGIONn_CFG1,
+						i)) << 32);
+			} else if (dev_config->addl_trans_bases != NULL) {
+				addr_trans_segs[i].offset =
+					((uint64_t)HWIO_INXI(
+						dev_config->addl_trans_bases[0],
+						LLCC_BEAC_ADDR_ADDL_REGIONn_CFG0,
+						i)) |
+					(((uint64_t)HWIO_INXI(
+						dev_config->addl_trans_bases[0],
+						LLCC_BEAC_ADDR_ADDL_REGIONn_CFG1,
+						i)) << 32);
+			}
+			addr_trans_segs[i].error = (error & (1U << i)) != 0U;
 			addr_trans_segs[i].offset =
-				((uint64_t)HWIO_INXI(
-					dev_config->trans_bases[0],
-					LLCC_BEAC_ADDR_REGIONn_CFG0, i)) |
-				(((uint64_t)HWIO_INXI(
-					dev_config->trans_bases[0],
-					LLCC_BEAC_ADDR_REGIONn_CFG1, i)) << 32);
+				(addr_trans_segs[i].offset ^ sign_bit) -
+				sign_bit;
+		}
+		break;
+
+	case ICBCFG_ADDR_TRANS_MC:
+		/* Segments 0..5: REGIONn_CFG{0..3}; 6+: REGION_n_CFG{0,1} (offset only) */
+		error = HWIO_INXF(dev_config->trans_bases[0],
+				  MC_ISU_ADDR_TRANSLATOR_CFG, ERROR);
+		for (i = 0U; i < dev_config->num_segments; i++) {
+			if (i < ADDL_REGION_START) {
+				if (i == 0U) {
+					addr_trans_segs[0].base = 0ULL;
+				} else {
+					addr_trans_segs[i].base =
+						((uint64_t)HWIO_INXI(
+							dev_config->trans_bases[0],
+							MC_ISU_ADDR_REGIONn_CFG2,
+							i)) |
+						(((uint64_t)HWIO_INXI(
+							dev_config->trans_bases[0],
+							MC_ISU_ADDR_REGIONn_CFG3,
+							i)) << 32);
+				}
+				addr_trans_segs[i].offset =
+					((uint64_t)HWIO_INXI(
+						dev_config->trans_bases[0],
+						MC_ISU_ADDR_REGIONn_CFG0, i)) |
+					(((uint64_t)HWIO_INXI(
+						dev_config->trans_bases[0],
+						MC_ISU_ADDR_REGIONn_CFG1, i)) << 32);
+			} else {
+				addr_trans_segs[i].base = 0ULL;
+				addr_trans_segs[i].offset =
+					((uint64_t)HWIO_INXI(
+						dev_config->trans_bases[0],
+						MC_ISU_ADDR_REGION_n_CFG0, i)) |
+					(((uint64_t)HWIO_INXI(
+						dev_config->trans_bases[0],
+						MC_ISU_ADDR_REGION_n_CFG1, i)) << 32);
+			}
 			addr_trans_segs[i].error = (error & (1U << i)) != 0U;
 			addr_trans_segs[i].offset =
 				(addr_trans_segs[i].offset ^ sign_bit) -
@@ -186,10 +286,6 @@ static void get_system_memory_map(struct icbcfg_device_config *dev_config,
 		sys_map->channels[i] = sys_map->channels[0];
 }
 
-/*
- * On SDM845 v1 the xPU address is the MC address; on all later chips it is
- * the SoC address and no translation is needed.
- */
 static enum icbcfg_error_type translate_address(
 	struct icbcfg_device_config *dev_config,
 	uint64_t soc_addr,
@@ -262,9 +358,51 @@ static enum icbcfg_error_type compare_ch_segments(
 	struct icbcfg_device_config *dev_config)
 {
 	uint32_t	i, j;
-	uint32_t	base_low, base_high, off_low, off_high;
+	uint32_t	base_low = 0U, base_high = 0U, off_low, off_high;
 
 	switch (dev_config->trans_type) {
+	case ICBCFG_ADDR_TRANS_NOC:
+		for (i = 0U; i < dev_config->num_segments; i++) {
+			if (i != 0U) {
+				base_low  = HWIO_INXI(
+					dev_config->trans_bases[0],
+					MEMNOC_ADDR_TRANSLATOR_BASEn_LOW, i);
+				base_high = HWIO_INXI(
+					dev_config->trans_bases[0],
+					MEMNOC_ADDR_TRANSLATOR_BASEn_HIGH, i);
+			}
+			off_low  = HWIO_INXI(
+				dev_config->trans_bases[0],
+				MEMNOC_ADDR_TRANSLATOR_OFFSETn_LOW, i);
+			off_high = HWIO_INXI(
+				dev_config->trans_bases[0],
+				MEMNOC_ADDR_TRANSLATOR_OFFSETn_HIGH, i);
+
+			for (j = 1U; j < dev_config->num_channels; j++) {
+				if (i != 0U &&
+				    ((base_low != HWIO_INXI(
+						dev_config->trans_bases[j],
+						MEMNOC_ADDR_TRANSLATOR_BASEn_LOW,
+						i)) ||
+				     (base_high != HWIO_INXI(
+						dev_config->trans_bases[j],
+						MEMNOC_ADDR_TRANSLATOR_BASEn_HIGH,
+						i))))
+					return ICBCFG_ERROR;
+
+				if ((off_low != HWIO_INXI(
+						dev_config->trans_bases[j],
+						MEMNOC_ADDR_TRANSLATOR_OFFSETn_LOW,
+						i)) ||
+				    (off_high != HWIO_INXI(
+						dev_config->trans_bases[j],
+						MEMNOC_ADDR_TRANSLATOR_OFFSETn_HIGH,
+						i)))
+					return ICBCFG_ERROR;
+			}
+		}
+		break;
+
 	case ICBCFG_ADDR_TRANS_LLCC:
 		for (i = 0U;
 		     i < dev_config->num_segments && i < ADDL_REGION_START;
@@ -303,6 +441,49 @@ static enum icbcfg_error_type compare_ch_segments(
 						LLCC_BEAC_ADDR_REGIONn_CFG1,
 						i)))
 					return ICBCFG_ERROR;
+			}
+		}
+
+		if (dev_config->addl_trans_bases != NULL) {
+			for (i = ADDL_REGION_START;
+			     i < dev_config->num_segments;
+			     i++) {
+				base_low  = HWIO_INXI(
+					dev_config->addl_trans_bases[0],
+					LLCC_BEAC_ADDR_ADDL_REGIONn_CFG2, i);
+				base_high = HWIO_INXI(
+					dev_config->addl_trans_bases[0],
+					LLCC_BEAC_ADDR_ADDL_REGIONn_CFG3, i);
+				off_low   = HWIO_INXI(
+					dev_config->addl_trans_bases[0],
+					LLCC_BEAC_ADDR_ADDL_REGIONn_CFG0, i);
+				off_high  = HWIO_INXI(
+					dev_config->addl_trans_bases[0],
+					LLCC_BEAC_ADDR_ADDL_REGIONn_CFG1, i);
+
+				for (j = 1U;
+				     j < dev_config->num_channels;
+				     j++) {
+					if ((base_low != HWIO_INXI(
+							dev_config->addl_trans_bases[j],
+							LLCC_BEAC_ADDR_ADDL_REGIONn_CFG2,
+							i)) ||
+					    (base_high != HWIO_INXI(
+							dev_config->addl_trans_bases[j],
+							LLCC_BEAC_ADDR_ADDL_REGIONn_CFG3,
+							i)))
+						return ICBCFG_ERROR;
+
+					if ((off_low != HWIO_INXI(
+							dev_config->addl_trans_bases[j],
+							LLCC_BEAC_ADDR_ADDL_REGIONn_CFG0,
+							i)) ||
+					    (off_high != HWIO_INXI(
+							dev_config->addl_trans_bases[j],
+							LLCC_BEAC_ADDR_ADDL_REGIONn_CFG1,
+							i)))
+						return ICBCFG_ERROR;
+				}
 			}
 		}
 		break;
@@ -375,6 +556,67 @@ static enum icbcfg_error_type compare_ch_segments(
 						LLCC_BEAC_MA_ADDR_REGIONn_CFG1,
 						i)))
 					return ICBCFG_ERROR;
+			}
+		}
+		break;
+
+	case ICBCFG_ADDR_TRANS_MC:
+		for (i = 0U; i < dev_config->num_segments; i++) {
+			if (i < ADDL_REGION_START) {
+				if (i != 0U) {
+					base_low  = HWIO_INXI(
+						dev_config->trans_bases[0],
+						MC_ISU_ADDR_REGIONn_CFG2, i);
+					base_high = HWIO_INXI(
+						dev_config->trans_bases[0],
+						MC_ISU_ADDR_REGIONn_CFG3, i);
+				}
+				off_low  = HWIO_INXI(
+					dev_config->trans_bases[0],
+					MC_ISU_ADDR_REGIONn_CFG0, i);
+				off_high = HWIO_INXI(
+					dev_config->trans_bases[0],
+					MC_ISU_ADDR_REGIONn_CFG1, i);
+			} else {
+				off_low  = HWIO_INXI(
+					dev_config->trans_bases[0],
+					MC_ISU_ADDR_REGION_n_CFG0, i);
+				off_high = HWIO_INXI(
+					dev_config->trans_bases[0],
+					MC_ISU_ADDR_REGION_n_CFG1, i);
+			}
+
+			for (j = 1U; j < dev_config->num_channels; j++) {
+				if (i < ADDL_REGION_START && i != 0U &&
+				    ((base_low != HWIO_INXI(
+						dev_config->trans_bases[j],
+						MC_ISU_ADDR_REGIONn_CFG2, i)) ||
+				     (base_high != HWIO_INXI(
+						dev_config->trans_bases[j],
+						MC_ISU_ADDR_REGIONn_CFG3, i))))
+					return ICBCFG_ERROR;
+
+				if (i < ADDL_REGION_START) {
+					if ((off_low != HWIO_INXI(
+							dev_config->trans_bases[j],
+							MC_ISU_ADDR_REGIONn_CFG0,
+							i)) ||
+					    (off_high != HWIO_INXI(
+							dev_config->trans_bases[j],
+							MC_ISU_ADDR_REGIONn_CFG1,
+							i)))
+						return ICBCFG_ERROR;
+				} else {
+					if ((off_low != HWIO_INXI(
+							dev_config->trans_bases[j],
+							MC_ISU_ADDR_REGION_n_CFG0,
+							i)) ||
+					    (off_high != HWIO_INXI(
+							dev_config->trans_bases[j],
+							MC_ISU_ADDR_REGION_n_CFG1,
+							i)))
+						return ICBCFG_ERROR;
+				}
 			}
 		}
 		break;

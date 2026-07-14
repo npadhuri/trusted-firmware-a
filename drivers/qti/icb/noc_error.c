@@ -14,8 +14,6 @@
 #include <drivers/qti/chipinfo/chipinfo.h>
 #include <drivers/qti/icb/icb_error.h>
 
-#include "cmsr_error.h"
-#include "ddrss_error.h"
 #include "noc_error.h"
 #include "noc_error_platform.h"
 #include "noc_error_target.h"
@@ -1048,10 +1046,5 @@ static void noc_error_init(void)
 
 void qti_icb_error_init(void)
 {
-	/* Initialise DDRSS and CMSR error handlers first. */
-	qti_ddrss_error_init();
-	qti_cmsr_error_init();
-
-	/* Initialise NOC error handler. */
 	noc_error_init();
 }

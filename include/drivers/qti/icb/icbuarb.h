@@ -19,7 +19,7 @@ struct icb_bw_req {
 /* Opaque per-client handle; NULL on failure. */
 typedef struct icb_client *icb_client_handle;
 
-bool icbuarb_init(void);
+bool qti_icbuarb_init(void);
 icb_client_handle icbuarb_create_client(enum icbid_master master,
 					enum icbid_slave slave);
 bool icbuarb_issue_request(icb_client_handle handle, struct icb_bw_req *req);

@@ -110,7 +110,7 @@ void bl31_platform_setup(void)
 	qti_clock_init();
 	qti_smmu_init();
 	qti_interrupt_svc_init(bl32_image_ep_info.pc != 0);
-	icbuarb_init();
+	qti_icbuarb_init();
 	qti_icb_error_init();
 	qti_sec_core_init();
 	qti_qtimer_init();

@@ -14,8 +14,6 @@ PLAT_INCLUDES	+=	-I$(ICB_BASE)
 PLAT_INCLUDES   +=      -I$(ICB_BASE)/include
 
 BL31_SOURCES	+=	$(ICB_BASE)/noc_error.c		\
-			$(ICB_BASE)/cmsr_error.c	\
-			$(ICB_BASE)/ddrss_error.c	\
 			$(ICB_BASE)/icbcfg.c		\
 			$(ICB_BASE)/icbcfg_query.c
 BL31_SOURCES    +=      $(ICB_BASE)/icbuarb.c
@@ -42,8 +40,6 @@ BL31_SOURCES	+=	$(ICB_BASE)/$(CHIPSET)/noc_error_data.c		\
 			$(ICB_BASE)/$(CHIPSET)/noc_error_target.c	\
 			$(ICB_BASE)/$(CHIPSET)/icbuarb_target.c		\
 			$(ICB_BASE)/$(CHIPSET)/u_data.c			\
-			$(ICB_BASE)/$(CHIPSET)/cmsr_error_data.c	\
-			$(ICB_BASE)/$(CHIPSET)/ddrss_error_data.c	\
 			$(ICB_BASE)/$(CHIPSET)/icbcfg_query_data.c
 else
 BL31_SOURCES	+=	$(ICB_BASE)/noc_error_target_stub.c
@@ -56,7 +52,7 @@ endif
 # NOC error registers can be programmed. Setting ICB_NOC_BCM_VOTE := 1
 # pulls in the ICB micro-arbiter (which transitively requires the RPMh
 # command service and cmd_db drivers); the platform's noc_error_target.c
-# is then expected to call icbuarb_init() / icbuarb_create_client() /
+# is then expected to call qti_icbuarb_init() / icbuarb_create_client() /
 # icbuarb_issue_request() from qti_noc_error_init_target().
 #
 ifeq ($(ICB_NOC_BCM_VOTE),1)
