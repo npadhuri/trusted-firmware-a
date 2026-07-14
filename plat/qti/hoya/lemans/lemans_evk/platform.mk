@@ -58,6 +58,8 @@ PLAT_INCLUDES		:=	-Iinclude/plat/common/					\
 				-I${PLAT_PATH}/hoya/qtiseclib/inc/${CHIPSET}
 
 include lib/xlat_tables_v2/xlat_tables.mk
+include drivers/qti/chipinfo/chipinfo.mk
+
 PLAT_BL_COMMON_SOURCES	+=	common/desc_image_load.c				\
 				drivers/qti/crypto/rng.c				\
 				lib/cpus/aarch64/cortex_a78c.S				\
@@ -96,6 +98,15 @@ BL31_SOURCES		+=	drivers/delay_timer/generic_delay_timer.c		\
 BL31_SOURCES	+=		drivers/qti/sec_core/sec_core_stub.c \
 				drivers/qti/accesscontrol/access_control_stub.c
 
+# Build the NoC error logger driver. CHIPSET selects drivers/qti/icb/lemans
+# for the platform back-end. ICB_NOC_BCM_VOTE=1 pulls in the ICB
+# micro-arbiter so the NoC bus rails are voted ON before the error
+# registers are programmed.
+ICB_NOC_BCM_VOTE	:=	1
+include drivers/qti/icb/icb.mk
+
+include drivers/qti/smem/smem.mk
+
 # Override this on the command line to point to the qtiseclib library
 QTISECLIB_PATH ?=
 
@@ -106,6 +117,10 @@ $(warning QTISECLIB_PATH is not provided while building, using stub implementati
 		THIS FIRMWARE WILL NOT BOOT!)
 
 include drivers/qti/smmu/smmu.mk
+include drivers/qti/pdc/pdc.mk
+include drivers/qti/pwr_utils/pwr_utils.mk
+include drivers/qti/rpmh/rpmh.mk
+include drivers/qti/clock/clock.mk
 
 PLAT_INCLUDES   +=      -Iinclude/drivers/qti/qtimer/${CHIPSET} \
 			-Iinclude/drivers/qti/watchdog/${CHIPSET}
