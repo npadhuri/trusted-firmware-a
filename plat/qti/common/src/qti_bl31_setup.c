@@ -15,6 +15,7 @@
 #include <drivers/qti/accesscontrol/accesscontrol.h>
 #include <drivers/qti/accesscontrol/xpu.h>
 #include <drivers/qti/chipinfo/chipinfo.h>
+#include <drivers/qti/icb/icbuarb.h>
 #include <drivers/qti/pdc/pdc.h>
 #include <drivers/qti/qtimer/qtimer.h>
 #include <drivers/qti/sec_core/sec_core.h>
@@ -108,6 +109,7 @@ void bl31_platform_setup(void)
 	}
 	qti_smmu_init();
 	qti_interrupt_svc_init(bl32_image_ep_info.pc != 0);
+	qti_icbcfg_init();
 	qti_sec_core_init();
 	qti_qtimer_init();
 	if (qti_watchdog_init())
